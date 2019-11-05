@@ -3,3 +3,4 @@
 !.gitignore
 !msweep.*
 !*.pdf
+!run.sh
