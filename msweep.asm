@@ -211,27 +211,29 @@ posCurScreenP1:
 	
    ; [64bit] QWORD DIV - RDX:RAX / RBX 
    ; rowScreen
-	mov rax, [indexMat]    ; Move indexMat value to RAX register
-   xor rdx, rdx           ; Clear value from RDX
-   mov rbx, 10            ; Load divisor
+	mov rax, QWORD [indexMat]    ; Move indexMat value to RAX register
+   xor rdx, rdx                 ; Clear value from RDX
+   mov rbx, 10                  ; Load divisor
 
-   div rbx                ; Division execution
+   div rbx                      ; Division execution
    
-   mov r8, 2              ; Move multiplier to R8
-   mov r9, rdx            ; Save remainder for colScreen
+   mov r8, 2                    ; Move multiplier to R8
+   mov r9, rdx                  ; Save remainder for colScreen
 
-   mul r8                 ; Multiply RAX * R8, store in RAX
-   add rax, 7             ; Add 7 to RAX
-   mov [rowScreen], rax   ; Save computed value in rowScreen
+   mul r8                       ; Multiply RAX * R8, store in RAX
+   add rax, 7                   ; Add 7 to RAX
+   mov QWORD [rowScreen], rax   ; Save computed value in rowScreen
 
    ; colScreen
-   mov rax, r9            ; Move remainder saved in R9 to RAX
-   mov r8,  4             ; colScreen multiplication value
+   mov rax, r9                  ; Move remainder saved in R9 to RAX
+   mov r8,  4                   ; colScreen multiplication value
 
-   mul r8                 ; Multiply RAX * R8, store in RAX
-   add rax, 7             ; Add 7 to RAX
-   mov [colScreen], rax   ; Save computed value in colScreen
-			
+   mul r8                       ; Multiply RAX * R8, store in RAX
+   add rax, 7                   ; Add 7 to RAX
+   mov QWORD [colScreen], rax   ; Save computed value in colScreen
+	
+   call gotoxyP1                ; Goto call to computed position
+
 	mov rsp, rbp
 	pop rbp
 	ret
@@ -259,8 +261,31 @@ showMinesP1:
 	push rbp
 	mov  rbp, rsp
 		
-	
-	
+	mov eax, DWORD [numMines]     ; Load numMines value into EAX
+   xor edx, edx                  ; Clear EDX
+   mov ecx, 10                   ; Load divisor to ECX
+
+   div ecx                       ; Execute division
+
+   add eax, '0'                  ; Cast EAX value to char
+   add edx, '0'                  ; Cast EDX value to char
+
+   mov QWORD [rowScreen], 27     ; Set rowScreen to position 27
+
+   ; For EAX value
+   mov DWORD [charac], eax       ; Load EAX value to charac var
+   mov QWORD [colScreen], 24     ; Set colScreen to position 24
+
+   call gotoxyP1                 ; Go to position
+   call printchP1                ; Print character in charac
+
+   ; For EDX value
+   mov DWORD [charac], edx       ; Load EDX value to charac var
+   mov QWORD [colScreen], 26     ; Set colScreen to position 26
+
+   call gotoxyP1                 ; GotoXY -- God bless <conio.h>
+   call printchP1                ; Print
+   	
 	mov rsp, rbp
 	pop rbp
 	ret
