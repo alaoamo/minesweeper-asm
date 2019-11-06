@@ -208,8 +208,29 @@ getchP1:
 posCurScreenP1:
 	push rbp
 	mov  rbp, rsp
-	 
 	
+   ; [64bit] QWORD DIV - RDX:RAX / RBX 
+   ; rowScreen
+	mov rax, [indexMat]    ; Move indexMat value to RAX register
+   xor rdx, rdx           ; Clear value from RDX
+   mov rbx, 10            ; Load divisor
+
+   div rbx                ; Division execution
+   
+   mov r8, 2              ; Move multiplier to R8
+   mov r9, rdx            ; Save remainder for colScreen
+
+   mul r8                 ; Multiply RAX * R8, store in RAX
+   add rax, 7             ; Add 7 to RAX
+   mov [rowScreen], rax   ; Save computed value in rowScreen
+
+   ; colScreen
+   mov rax, r9            ; Move remainder saved in R9 to RAX
+   mov r8,  4             ; colScreen multiplication value
+
+   mul r8                 ; Multiply RAX * R8, store in RAX
+   add rax, 7             ; Add 7 to RAX
+   mov [colScreen], rax   ; Save computed value in colScreen
 			
 	mov rsp, rbp
 	pop rbp
