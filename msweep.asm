@@ -208,6 +208,11 @@ getchP1:
 posCurScreenP1:
 	push rbp
 	mov  rbp, rsp
+   push rax
+   push rdx
+   push rbx
+   push r8
+   push r9
 	
    ; [64bit] QWORD DIV - RDX:RAX / RBX 
    ; rowScreen
@@ -234,6 +239,11 @@ posCurScreenP1:
 	
    call gotoxyP1                ; Goto call to computed position
 
+   pop r9
+   pop r8
+   pop rbx
+   pop rdx
+   pop rax
 	mov rsp, rbp
 	pop rbp
 	ret
@@ -260,6 +270,9 @@ posCurScreenP1:
 showMinesP1:
 	push rbp
 	mov  rbp, rsp
+   push rax
+   push rcx
+   push rdx
 		
 	mov eax, DWORD [numMines]     ; Load numMines value into EAX
    xor edx, edx                  ; Clear EDX
@@ -285,7 +298,10 @@ showMinesP1:
 
    call gotoxyP1                 ; GotoXY -- God bless <conio.h>
    call printchP1                ; Print
-   	
+   
+   pop rdx
+   pop rcx
+   pop rax
 	mov rsp, rbp
 	pop rbp
 	ret
@@ -310,42 +326,58 @@ showMinesP1:
 updateBoardP1:
 	push rbp
 	mov  rbp, rsp
+   push rax
+   push rbx
+   push rcx
+   push rsi
+   push r8
+   push r9
+   push r10
 
+   mov ebx, 0                          ; Init marks counter to 0
    mov ecx, 0                          ; Init l1 counter to 0
    mov rax, 7                          ; Init rowScreen offset in position 7
-   mov edx, DimMatrix                  ; Load DimMatrix into EDX
-   dec edx                             ; EDX--
-   
+   mov r8d, DimMatrix                  ; Load DimMatrix into EDX
+   dec r8d                             ; EDX--
+
 	; Iterate over matrix
    l1:
-      cmp ecx, edx                     ; Compare ECX and EDX
+      cmp ecx, r8d                     ; Compare ECX and EDX
       je done                          ; Jump to done if ECX == EDX
       mov esi, 0                       ; Init l2 counter to 0
-      mov rdx, 7                       ; Init colScreen offset at position 7
-      mov eax, ecx                     ; Load ECX counter value into EAX
-      mov r8,  10                      ; Move multiplier 10 into R8
-      mul r8                           ; Multiply EAX * 10
-
-      l2:
-         cmp esi, edx                     ; Compare ESI and EDX
-         je l1                            ; Jump to l1 if ESI == EDX
-         mov al, BYTE [marks + eax + esi] ; Load n-th (char) element from vector
-         mov BYTE [charac], al            ; Load vector element onto charac
-         mov QWORD [colScreen], rdx       ; Update colScreen value
-         call gotoxyP1                    ; Goto screen position
-         call printchP1                   ; Print current character
-         add rdx, 4                       ; Add offset to colScreen
-         inc esi                          ; ESI++
-         jmp l2                           ; Jump to l2
-
+      mov r10, 7                       ; Init colScreen offset at position 7
       mov QWORD [rowScreen], rax       ; Update rowScreen value
-      add rax, 2                       ; Add offset to rowScreen
+
+   l2:
+      cmp esi, r8d                     ; Compare ESI and EDX
+      je reloop                        ; Jump to reloop if ESI == EDX
+      mov r9d, DWORD [marks + ebx]     ; Load n-th (char) element from vector
+      mov DWORD [charac], r9d          ; Load vector element onto charac
+      mov QWORD [colScreen], r10       ; Update colScreen value
+      call gotoxyP1                    ; Goto screen position
+      call printchP1                   ; Print current character
+      add r10, 4                       ; Add offset to colScreen
+      inc esi                          ; ESI++
+      inc ebx                          ; EBX++
+      jmp l2                           ; Jump to l2
+
+   reloop:
+      ; Add offset to rowScreen
+      inc rax                          ; Increment
+      inc rax                          ;   RAX
       inc ecx                          ; ECX++
-      jmp l1      
+      jmp l1                           ; Jump to l1
 
    done:
       call showMinesP1                 ; Call showMinesP1
 
+   pop r10
+   pop r9
+   pop r8
+   pop rsi
+   pop rcx
+   pop rbx
+   pop rax
 	mov rsp, rbp
 	pop rbp
 	ret
@@ -368,9 +400,93 @@ updateBoardP1:
 moveCursorP1:
 	push rbp
 	mov  rbp, rsp
+   push rax
+   push rbx
+   push rcx
+   push rdx
+   push r8
+   push r9
+   push r10
+   push r11
+   push r12
+   push r13
 
-	
-	
+   xor rdx, rdx               ; Clear RDX register
+   mov r8, DimMatrix          ; Set R8 to DimMatrix value
+   dec r8                     ; R8--
+
+   xor r9d, r9d               ; Clear R9D register
+   mov r9d, 'i'               ; Set R9D to i
+
+   xor r10d, r10d             ; Clear R10D register
+   mov r10d, 'j'              ; Set R10D to j
+
+   xor r11d, r11d             ; Clear R11D register
+   mov r11d, 'k'              ; Set R11D to k
+
+   xor r12d, r12d             ; Clear R12D register
+   mov r12d, 'l'              ; Set R12D to l
+
+   mov rcx, QWORD [indexMat]  ; Set RCX to indexMat value
+	mov rax, QWORD [indexMat]  ; Set RAX to indexMat value
+   xor rbx, rbx               ; Clear RBX register
+   mov rbx, 10                ; Set RBX to 10
+
+   div rbx                    ; Perform RDX:RAX / RBX
+
+   xor r13d, r13d               ; Clear EAX register
+   mov r13d, DWORD [charac]    ; Set EAX to charac value
+
+   cmp r13d, r9d               ; charac == 'i'
+   je i_lab
+
+   cmp r13d, r10d              ; charac == 'j'
+   je j_lab
+
+   cmp r13d, r11d              ; charac == 'k'
+   je k_lab
+
+   cmp r13d, r12d              ; charac == 'l'
+   je l_lab
+
+   jmp end                    ; No match, get out
+
+   i_lab:
+      cmp rax, 0              ; Compare RAX to 0
+      jle end                 ; if RAX <= 0 jump to end
+      sub rcx, 10             ; RCX - 10
+      jmp end                 ; Jump to end
+
+   j_lab:
+      cmp rdx, 0              ; Compare RDX to 0
+      jle end                 ; if RDX <= 0 jump to end
+      dec rcx                 ; RCX--
+      jmp end                 ; Jump to end
+
+   k_lab:
+      cmp rax, r8             ; Compare RAX to R8 (DimMatrix - 1)
+      jge end                 ; if RAX >= DimMatrix - 1 jump to end
+      add rcx, 10             ; RCX + 10
+      jmp end                 ; Jump to end
+
+   l_lab:
+      cmp rdx, r8             ; Compare RDX to R8
+      jge end                 ; if RDX >= DimMatrix - 1 jump to end
+      inc rcx                 ; RCX++
+
+   end:
+      mov QWORD [indexMat], rcx  ; Set indexMat value to RCX
+
+   pop r13
+   pop r12
+   pop r11
+   pop r10
+   pop r9
+   pop r8
+   pop rdx
+   pop rcx
+   pop rbx
+   pop rax
 	mov rsp, rbp
 	pop rbp
 	ret
@@ -398,7 +514,11 @@ mineMarkerP1:
 	push rbp
 	mov  rbp, rsp
 
-	        
+	mov rax, QWORD [indexMat]  ; Set RAX to indexMat value
+   xor rbx, rbx               ; Clear RBX register
+   mov rbx, 10                ; Set RBX to 10
+
+   div rbx                    ; Perform RDX:RAX / RBX
 	
 	mov rsp, rbp
 	pop rbp
