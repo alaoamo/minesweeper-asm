@@ -322,24 +322,26 @@ updateBoardP1:
       je done                          ; Jump to done if ECX == EDX
       mov esi, 0                       ; Init l2 counter to 0
       mov rdx, 7                       ; Init colScreen offset at position 7
+      mov eax, ecx                     ; Load ECX counter value into EAX
+      mov r8,  10                      ; Move multiplier 10 into R8
+      mul r8                           ; Multiply EAX * 10
+
+      l2:
+         cmp esi, edx                     ; Compare ESI and EDX
+         je l1                            ; Jump to l1 if ESI == EDX
+         mov al, BYTE [marks + eax + esi] ; Load n-th (char) element from vector
+         mov BYTE [charac], al            ; Load vector element onto charac
+         mov QWORD [colScreen], rdx       ; Update colScreen value
+         call gotoxyP1                    ; Goto screen position
+         call printchP1                   ; Print current character
+         add rdx, 4                       ; Add offset to colScreen
+         inc esi                          ; ESI++
+         jmp l2                           ; Jump to l2
+
       mov QWORD [rowScreen], rax       ; Update rowScreen value
       add rax, 2                       ; Add offset to rowScreen
-
-   l2:    
-      cmp esi, edx                     ; Compare ESI and EDX
-      je reloop                        ; Jump to reloop if ESI == EDX
-      mov al, BYTE [marks + ecx + esi] ; Load n-th (char) element from vector
-      mov BYTE [charac], al            ; Load vector element onto charac
-      mov QWORD [colScreen], rdx       ; Update colScreen value
-      call gotoxyP1                    ; Goto screen position
-      call printchP1                   ; Print current character
-      add rdx, 4                       ; Add offset to colScreen
-      inc esi                          ; ESI++
-      jmp l2                           ; Jump to l2
-
-   reloop:
       inc ecx                          ; ECX++
-      jmp l1
+      jmp l1      
 
    done:
       call showMinesP1                 ; Call showMinesP1
