@@ -311,7 +311,37 @@ updateBoardP1:
 	push rbp
 	mov  rbp, rsp
 
-	
+   mov ecx, 0                          ; Init counter (Intel convention ECX reg)
+   mov rax, 7                          ; Init rowScreen offset in position 7
+   mov edx, DimMatrix                  ; Load DimMatrix into EDX
+   dec edx                             ; EDX--
+   
+	; Iterate over matrix
+   l1:
+      cmp ecx, edx                     ; Compare ECX and DimMatrix
+      je done                          ; Jump to done if ECX == EDX
+      mov esi, 0                       ; Init ESI to 0
+      mov rdx, 7                       ; Init colScreen offset at position 7
+      mov QWORD [rowScreen], rax       ; Update rowScreen value
+      add rax, 2                       ; Add offset to rowScreen
+
+   l2:    
+      cmp esi, edx                     ; Compare ESI and EDX
+      je reloop                        ; Keep on loop2 if ESI < EDX
+      mov al, BYTE [marks + ecx + esi] ; Load n-th (char) element from vector
+      mov BYTE [charac], al            ; Load vector element onto charac
+      mov QWORD [colScreen], rdx       ; Update colScreen value
+      call gotoxyP1                    ; Goto screen position
+      call printchP1                   ; Print current character
+      add rdx, 4                       ; Add offset to colScreen
+      inc esi                          ; ESI++
+
+   reloop:
+      inc ecx                          ; ECX++
+      jmp l1
+
+   done:
+      call showMinesP1                 ; Call showMinesP1
 
 	mov rsp, rbp
 	pop rbp
