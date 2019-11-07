@@ -513,13 +513,51 @@ moveCursorP1:
 mineMarkerP1:
 	push rbp
 	mov  rbp, rsp
+   push rax
+   push rbx
+   push rcx
+   push rdx
+   push r8
 
-	mov rax, QWORD [indexMat]  ; Set RAX to indexMat value
+   xor rax, rax               ; Clear RAX register
    xor rbx, rbx               ; Clear RBX register
-   mov rbx, 10                ; Set RBX to 10
+   xor ecx, ecx               ; Clear ECX register
+   xor rdx, rdx               ; Clear RDX register
+   xor r8d, r8d               ; Clear R8D register
 
-   div rbx                    ; Perform RDX:RAX / RBX
-	
+   mov ecx, DWORD [numMines]  ; Set ECX to numMines value
+	mov rax, QWORD [indexMat]  ; Set RAX to indexMat value
+
+   mov ebx, ' '               ; Set EBX to whitespace char
+   mov edx, 'M'               ; Set EDX to 'M'
+
+   mov r8d, DWORD [marks + rax]  ; Set R8D to marks[indexMat]
+
+   cmp r8d, ebx               ; Compare R8D and EBX
+   jne else                   ; if marks[indexMat] != ' ' jump to else
+   cmp ecx, 0                 ; Compare ECX and 0
+   jle else                   ; if numMines <= 0 jump to else
+
+   if:
+      mov r8d, edx            ; Set R8D value to EDX ('M')
+      dec ecx                 ; Decrement ECX (numMines)
+      jmp endif               ; Jump to endif
+
+   else:
+      cmp r8d, edx            ; Compare R8D and EDX
+      jne endif               ; if marks[indexMat] != EDX ('M') jump to endif
+      mov r8d, ebx            ; Set R8D value to EBX (' ')
+      inc ecx                 ; Increase ECX (numMines)
+
+   endif:
+      mov DWORD [marks + rax], r8d  ; Set marks[indexMat] to R8D
+      mov DWORD [numMines], ecx     ; Set numMines value to ECX
+
+   pop r8
+   pop rdx
+   pop rcx
+   pop rbx
+   pop rax
 	mov rsp, rbp
 	pop rbp
 	ret
@@ -536,9 +574,19 @@ mineMarkerP1:
 checkMinesP1:
 	push rbp
 	mov  rbp, rsp
+   push rax
+	
+   xor eax, eax               ; Clear EAX register
+   mov eax, DWORD [numMines]  ; Set EAX to numMines value
 
-	
-	
+   cmp eax, 0                 ; Compare EAX and 0
+   jne nostate                ; if EAX != 0 jump to nostate
+
+   mov DWORD [state], 2       ; Set state value to 2
+
+   nostate:                   ; Blank label to redirect ending
+
+   pop rax
 	mov rsp, rbp
 	pop rbp
 	ret
