@@ -337,22 +337,22 @@ updateBoardP1:
    mov ebx, 0                          ; Init marks counter to 0
    mov ecx, 0                          ; Init l1 counter to 0
    mov rax, 7                          ; Init rowScreen offset in position 7
-   mov r8d, DimMatrix                  ; Load DimMatrix into EDX
-   dec r8d                             ; EDX--
+   mov r8d, DimMatrix                  ; Load DimMatrix into R8D
+   dec r8d                             ; R8D--
 
 	; Iterate over matrix
    l1:
-      cmp ecx, r8d                     ; Compare ECX and EDX
+      cmp ecx, r8d                     ; Compare ECX and R8D
       je done                          ; Jump to done if ECX == EDX
       mov esi, 0                       ; Init l2 counter to 0
       mov r10, 7                       ; Init colScreen offset at position 7
       mov QWORD [rowScreen], rax       ; Update rowScreen value
 
    l2:
-      cmp esi, r8d                     ; Compare ESI and EDX
-      je reloop                        ; Jump to reloop if ESI == EDX
-      mov r9b, BYTE [marks + ebx]     ; Load n-th (char) element from vector
-      mov BYTE [charac], r9b          ; Load vector element onto charac
+      cmp esi, r8d                     ; Compare ESI and R8D
+      je reloop                        ; Jump to reloop if ESI == R8D
+      mov r9b, BYTE [marks + ebx]      ; Load n-th (char) element from vector
+      mov BYTE [charac], r9b           ; Load vector element onto charac
       mov QWORD [colScreen], r10       ; Update colScreen value
       call gotoxyP1                    ; Goto screen position
       call printchP1                   ; Print current character
@@ -363,8 +363,8 @@ updateBoardP1:
 
    reloop:
       ; Add offset to rowScreen
-      inc rax                          ; Increment
-      inc rax                          ;   RAX
+      inc rax                          ; Increment RAX
+      inc rax                          ; (faster than add rax, 2)
       inc ecx                          ; ECX++
       jmp l1                           ; Jump to l1
 
@@ -415,17 +415,17 @@ moveCursorP1:
    mov r8, DimMatrix          ; Set R8 to DimMatrix value
    dec r8                     ; R8--
 
-   xor r9b, r9b               ; Clear R9D register
-   mov r9b, 'i'               ; Set R9D to i
+   xor r9b, r9b               ; Clear R9B register
+   mov r9b, 'i'               ; Set R9B to i
 
-   xor r10b, r10b             ; Clear R10D register
-   mov r10b, 'j'              ; Set R10D to j
+   xor r10b, r10b             ; Clear R10B register
+   mov r10b, 'j'              ; Set R10B to j
 
-   xor r11b, r11b             ; Clear R11D register
-   mov r11b, 'k'              ; Set R11D to k
+   xor r11b, r11b             ; Clear R11B register
+   mov r11b, 'k'              ; Set R11B to k
 
-   xor r12b, r12b             ; Clear R12D register
-   mov r12b, 'l'              ; Set R12D to l
+   xor r12b, r12b             ; Clear R12B register
+   mov r12b, 'l'              ; Set R12B to l
 
    mov rcx, QWORD [indexMat]  ; Set RCX to indexMat value
 	mov rax, QWORD [indexMat]  ; Set RAX to indexMat value
@@ -434,19 +434,19 @@ moveCursorP1:
 
    div rbx                    ; Perform RDX:RAX / RBX
 
-   xor r13b, r13b               ; Clear EAX register
-   mov r13b, BYTE [charac]    ; Set EAX to charac value
+   xor r13b, r13b             ; Clear R13B register
+   mov r13b, BYTE [charac]    ; Set R13B to charac value
 
-   cmp r13b, r9b               ; charac == 'i'
+   cmp r13b, r9b              ; charac == 'i'
    je i_lab
 
-   cmp r13b, r10b              ; charac == 'j'
+   cmp r13b, r10b             ; charac == 'j'
    je j_lab
 
-   cmp r13b, r11b              ; charac == 'k'
+   cmp r13b, r11b             ; charac == 'k'
    je k_lab
 
-   cmp r13b, r12b              ; charac == 'l'
+   cmp r13b, r12b             ; charac == 'l'
    je l_lab
 
    jmp end                    ; No match, get out
@@ -523,7 +523,7 @@ mineMarkerP1:
    xor bl, bl                 ; Clear BL register
    xor ecx, ecx               ; Clear ECX register
    xor dl, dl                 ; Clear DL register
-   xor r8b, r8b               ; Clear R8D register
+   xor r8b, r8b               ; Clear R8B register
 
    mov ecx, DWORD [numMines]  ; Set ECX to numMines value
 	mov rax, QWORD [indexMat]  ; Set RAX to indexMat value
@@ -531,26 +531,26 @@ mineMarkerP1:
    mov bl, ' '                ; Set BL to whitespace char
    mov dl, 'M'                ; Set DL to 'M'
 
-   mov r8b, BYTE [marks + rax]  ; Set R8D to marks[indexMat]
+   mov r8b, BYTE [marks + rax]  ; Set R8B to marks[indexMat]
 
-   cmp r8b, bl                ; Compare R8D and BL
+   cmp r8b, bl                ; Compare R8B and BL
    jne else                   ; if marks[indexMat] != ' ' jump to else
    cmp ecx, 0                 ; Compare ECX and 0
    jle else                   ; if numMines <= 0 jump to else
 
    if:
-      mov r8b, dl             ; Set R8D value to DL ('M')
+      mov r8b, dl             ; Set R8B value to DL ('M')
       dec ecx                 ; Decrement ECX (numMines)
       jmp endif               ; Jump to endif
 
    else:
-      cmp r8b, dl             ; Compare R8D and DL
+      cmp r8b, dl             ; Compare R8B and DL
       jne endif               ; if marks[indexMat] != EDX ('M') jump to endif
-      mov r8b, bl             ; Set R8D value to BL (' ')
+      mov r8b, bl             ; Set R8B value to BL (' ')
       inc ecx                 ; Increase ECX (numMines)
 
    endif:
-      mov BYTE [marks + rax], r8b   ; Set marks[indexMat] to R8D
+      mov BYTE [marks + rax], r8b   ; Set marks[indexMat] to R8B
       mov DWORD [numMines], ecx     ; Set numMines value to ECX
 
    pop r8
