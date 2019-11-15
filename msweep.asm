@@ -337,19 +337,17 @@ updateBoardP1:
    mov ebx, 0                          ; Init marks counter to 0
    mov ecx, 0                          ; Init l1 counter to 0
    mov rax, 7                          ; Init rowScreen offset in position 7
-   mov r8d, DimMatrix                  ; Load DimMatrix into R8D
-   dec r8d                             ; R8D--
 
 	; Iterate over matrix
    l1:
-      cmp ecx, r8d                     ; Compare ECX and R8D
+      cmp ecx, DimMatrix               ; Compare ECX and DimMatrix
       je done                          ; Jump to done if ECX == EDX
       mov esi, 0                       ; Init l2 counter to 0
       mov r10, 7                       ; Init colScreen offset at position 7
       mov QWORD [rowScreen], rax       ; Update rowScreen value
 
    l2:
-      cmp esi, r8d                     ; Compare ESI and R8D
+      cmp esi, DimMatrix               ; Compare ESI and DimMatrix
       je reloop                        ; Jump to reloop if ESI == R8D
       mov r9b, BYTE [marks + ebx]      ; Load n-th (char) element from vector
       mov BYTE [charac], r9b           ; Load vector element onto charac
